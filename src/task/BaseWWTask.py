@@ -11,6 +11,14 @@ from ok.ocr.OCR import OCR
 
 logger = get_logger(__name__)
 
+key_config_option = ConfigOption('Game Hotkey Config', {
+    'HotKey Verify': True,
+    'Echo Key': 'q',
+    'Liberation Key': 'r',
+    'Resonance Key': 'f',
+    'Interact Key': 'e',
+}, description='In Game Hotkey for Skills')
+
 pick_echo_config_option = ConfigOption('Pick Echo Config', {
     'Use OCR': False
 }, config_description={
@@ -29,6 +37,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
+        self.key_config = self.get_global_config(key_config_option)
         self.pick_echo_config = self.get_global_config(pick_echo_config_option)
         self.monthly_card_config = self.get_global_config(monthly_card_config_option)
         self.next_monthly_card_start = 0
@@ -58,6 +67,18 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             return False, message
         else:
             return True, None
+                
+    def get_liberation_key(self):
+        return self.key_config['Liberation Key']
+
+    def get_echo_key(self):
+        return self.key_config['Echo Key']
+
+    def get_resonance_key(self):
+        return self.key_config['Resonance Key']       
+            
+    def get_interact_key(self):
+        return self.key_config['Interact Key']                
 
     def absorb_echo_text(self, ignore_config=False):
         if (self.pick_echo_config.get('Use OCR') or self.ocr_lib == 'paddleocr' or ignore_config) and (
@@ -162,7 +183,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
                                             target_text=target_text) and self.sleep(0.5)
         else:
-            self.send_key('f')
+            self.send_key(self.get_interact_key())
             if self.handle_claim_button():
                 return False
         self.sleep(0.5)
@@ -178,7 +199,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         f_found = self.wait_until(lambda: self.find_f_with_text(target_text=target_text), time_out=time_out,
                                   raise_if_not_found=False, wait_until_before_delay=0)
         if f_found:
-            self.send_key('f')
+            self.send_key(self.get_interact_key())
             self.sleep(0.1)
         self.send_key_up(direction)
         if running:

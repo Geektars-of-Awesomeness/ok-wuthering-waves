@@ -28,21 +28,12 @@ class CharDeadException(NotInCombatException):
     pass
 
 
-key_config_option = ConfigOption('Game Hotkey Config', {
-    'HotKey Verify': True,
-    'Echo Key': 'q',
-    'Liberation Key': 'r',
-    'Resonance Key': 'e',
-}, description='In Game Hotkey for Skills')
-
-
 class BaseCombatTask(CombatCheck, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
         self.chars = [None, None, None]
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self.key_config = self.get_global_config(key_config_option)
 
         self.mouse_pos = None
         self.combat_start = 0
@@ -224,15 +215,6 @@ class BaseCombatTask(CombatCheck, FindFeature, OCR):
         if post_action:
             post_action()
         logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
-
-    def get_liberation_key(self):
-        return self.key_config['Liberation Key']
-
-    def get_echo_key(self):
-        return self.key_config['Echo Key']
-
-    def get_resonance_key(self):
-        return self.key_config['Resonance Key']
 
     def has_resonance_cd(self):
         return self.has_cd('resonance')
