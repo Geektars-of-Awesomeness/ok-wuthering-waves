@@ -232,7 +232,7 @@ class BaseChar:
         self.logger.info('reset state')
         self.has_intro = False
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0):
+    def click_liberation(self, con_less_than=-1, send_click=False, add_heavy=False, wait_if_cd_ready=0):
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
                 return False
@@ -253,6 +253,8 @@ class BaseChar:
                 self.liberation_available_mark = False
                 clicked = True
                 last_click = now
+                if add_heavy:
+                    self.task.mouse_down()
             if time.time() - start > 5:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
@@ -278,7 +280,10 @@ class BaseChar:
         self.add_freeze_duration(start, duration)
         self.task.in_liberation = False
         if clicked:
-            self.logger.info(f'click_liberation end {duration}')
+            liberation_time = f'{(time.time() - start):.2f}'
+            self.logger.info(f'click_liberation end {liberation_time}')
+            if add_heavy:
+                self.task.mouse_up()
         return clicked
 
     def on_combat_end(self, chars):
@@ -411,6 +416,10 @@ class BaseChar:
             if until_con_full and self.is_con_full():
                 return
             self.task.click(interval=interval)
+
+    def jump(self):
+        self.task.send_key(' ')
+        self.logger.info(f'jumped basechar')      
 
     def normal_attack(self):
         self.logger.debug('normal attack')
