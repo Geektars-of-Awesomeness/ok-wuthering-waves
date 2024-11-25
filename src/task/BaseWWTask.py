@@ -289,6 +289,12 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         if dropped:
             self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
 
+    def record_error_log(self, errorMsg):
+        self.info['Errors (see logs for details)'] = self.info.get('Errors (see logs for details)', '') + errorMsg + '\n'
+
+    def incr_skip_count(self, boss_name):
+        self.info[f'{boss_name} (skip count)'] = self.info.get(f'{boss_name} (skip count)',0) + 1    
+
     def should_check_monthly_card(self):
         if self.next_monthly_card_start > 0:
             if 0 < time.time() - self.next_monthly_card_start < 120:
@@ -407,7 +413,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         self.click_relative(0.89, 0.91)
         self.sleep(1)
         self.wait_click_travel(use_custom=use_custom)
-        self.wait_in_team_and_world(time_out=120)
+        self.wait_in_team_and_world(time_out=30) #120
 
     def click_traval_button(self, use_custom=False):
         if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
