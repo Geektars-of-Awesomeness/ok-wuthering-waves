@@ -86,11 +86,10 @@ class BaseChar:
             self.logger.debug('has_intro wait click 1.2 sec')
             self.continues_normal_attack(1.2, click_resonance_if_ready_and_return=True)
         self.click_liberation(con_less_than=1)
-        if self.click_resonance()[0]:
-            return self.switch_next_char()
-        if self.click_echo():
-            return self.switch_next_char()
-        self.continues_normal_attack(0.31)
+        clicked_res = self.click_resonance()[0]
+        clicked_echo = self.click_echo()[0]
+        if not clicked_res or not clicked_echo:
+            self.continues_normal_attack(0.31)
         self.switch_next_char()
 
     def has_cd(self, box_name):

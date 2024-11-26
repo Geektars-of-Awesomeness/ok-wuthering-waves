@@ -7,11 +7,11 @@ from src.task.BaseCombatTask import BaseCombatTask, CharDeadException
 logger = get_logger(__name__)
 
 boss_config = {
-    'Mech Abomination': {"walk_sec" : 10, "use_custom_teleport" : False},
+    'Mech Abomination': {"walk_sec" : 13, "use_custom_teleport" : False},
     'Inferno Rider': {"walk_sec" : 5, "use_custom_teleport" : False},
     'Fallacy of No Return': {"walk_sec" : 10, "use_custom_teleport" : False},
     'Bell-Borne Geochelone': {"walk_sec" : 6, "use_custom_teleport" : False}, 
-    'Crownless': {"walk_sec" : 7, "use_custom_teleport" : False}, 
+    'Crownless': {"walk_sec" : 5, "use_custom_teleport" : False}, 
     'Thundering Mephis': {"walk_sec" : 5, "use_custom_teleport" : False}, 
     'Tempest Mephis': {"walk_sec" : 4, "use_custom_teleport" : False},    
     'Feilian Beringal': {"walk_sec" : 10, "use_custom_teleport" : False},
@@ -89,17 +89,19 @@ class FarmWorldBossTask(BaseCombatTask):
                         if not use_custom_teleport:
                             logger.info(f'walk to the boss for {walk_sec} sec')
                             self.walk_until_f(raise_if_not_found=False, time_out=walk_sec)
+                            logger.info(f'stopped walking to the boss for {walk_sec} sec')
 
                         logger.info(f'farm echo combat once start')
                         if boss_name == 'Crownless':
                             self.wait_in_team_and_world(time_out=20)
                             self.sleep(2)
                             logger.info('Crownless walk to interact')
-                            self.walk_until_f(raise_if_not_found=True, time_out=10, backward_time=1)
-                            
+                            self.walk_until_f(raise_if_not_found=False, time_out=10, backward_time=1)
+                            logger.info('Crownless wait until in combat')
                             in_combat = self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10,
                                                         wait_until_before_delay=0)
                             if not in_combat:  # try click again
+                                logger.info('Crownless still not in combat, waiting until f')
                                 self.walk_until_f(raise_if_not_found=True, time_out=4)
 
                         elif boss_name == 'Bell-Borne Geochelone':
