@@ -85,11 +85,10 @@ class BaseChar:
             self.logger.debug('has_intro wait click 1.2 sec')
             self.continues_normal_attack(1.2, click_resonance_if_ready_and_return=True)
         self.click_liberation(con_less_than=1)
-        if self.click_resonance()[0]:
-            return self.switch_next_char()
-        if self.click_echo():
-            return self.switch_next_char()
-        self.continues_normal_attack(0.31)
+        clicked_res = self.click_resonance()[0]
+        clicked_echo = self.click_echo()[0]
+        if not clicked_res or not clicked_echo:
+            self.continues_normal_attack(0.31)
         self.switch_next_char()
 
     def has_cd(self, box_name):
@@ -277,7 +276,8 @@ class BaseChar:
         self.add_freeze_duration(start, duration)
         self.task.in_liberation = False
         if clicked:
-            self.logger.info(f'click_liberation end {duration}')
+            liberation_time = f'{(time.time() - start):.2f}'
+            self.logger.info(f'click_liberation end {liberation_time}')
         return clicked
 
     def on_combat_end(self, chars):
@@ -410,6 +410,10 @@ class BaseChar:
             if until_con_full and self.is_con_full():
                 return
             self.task.click(interval=interval)
+
+    def jump(self):
+        self.task.send_key(' ')
+        self.logger.info(f'jumped basechar')      
 
     def normal_attack(self):
         self.logger.debug('normal attack')

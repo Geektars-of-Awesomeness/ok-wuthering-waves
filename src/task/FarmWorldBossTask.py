@@ -1,30 +1,46 @@
 from qfluentwidgets import FluentIcon
 
+from ok.Task import CannotFindException, WaitFailedException
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharDeadException
 
 logger = Logger.get_logger(__name__)
 
+boss_config = {
+    'Mech Abomination': {"walk_sec" : 13, "use_custom_teleport" : False},
+    'Inferno Rider': {"walk_sec" : 5, "use_custom_teleport" : False},
+    'Fallacy of No Return': {"walk_sec" : 10, "use_custom_teleport" : False},
+    'Bell-Borne Geochelone': {"walk_sec" : 6, "use_custom_teleport" : False}, 
+    'Crownless': {"walk_sec" : 5, "use_custom_teleport" : False}, 
+    'Thundering Mephis': {"walk_sec" : 5, "use_custom_teleport" : False}, 
+    'Tempest Mephis': {"walk_sec" : 4, "use_custom_teleport" : False},    
+    'Feilian Beringal': {"walk_sec" : 10, "use_custom_teleport" : False},
+    'Mourning Aix': {"walk_sec" : 6, "use_custom_teleport" : False}, 
+    'Impermanence Heron': {"walk_sec" : 6, "use_custom_teleport" : False},
+    'Nightmare: Mourning Aix': {"walk_sec" : 5, "use_custom_teleport" : False}, 
+    'Nightmare: Inferno Rider': {"walk_sec" : 5, "use_custom_teleport" : False}, 
+    'Nightmare: Crownless': {"walk_sec" : 5, "use_custom_teleport" : False}, 
+    'Nightmare: Tempest Mephis': {"walk_sec" : 4, "use_custom_teleport" : False}, 
+    'Nightmare: Thundering Mephis': {"walk_sec" : 5, "use_custom_teleport" : False}, 
+    'Nightmare: Impermanence Heron': {"walk_sec" : 6, "use_custom_teleport" : False}, 
+    'Nightmare: Feilian Beringal': {"walk_sec" : 5, "use_custom_teleport" : False}, 
+    'Dragon of Dirge': {"walk_sec" : 5, "use_custom_teleport" : False}, 
+    'Sentry Construct': {"walk_sec" : 5, "use_custom_teleport" : False},
+}
 
 class FarmWorldBossTask(BaseCombatTask):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.description = "Click Start in Game World"
-        self.name = "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-        self.boss_names = ['N/A','Sentry Construct','Dragon of Dirge','Nightmare: Feilian Beringal',
-                           'Nightmare: Impermanence Heron','Nightmare: Thundering Mephis',
-                           'Nightmare: Tempest Mephis', 'Nightmare: Crownless',
-                           'Nightmare: Inferno Rider','Nightmare: Mourning Aix','Bell-Borne Geochelone', 'Crownless', 'Thundering Mephis', 'Tempest Mephis',
-                           'Inferno Rider',
-                           'Feilian Beringal',
-                           'Mourning Aix', 'Impermanence Heron', 'Lampylumen Myriad', 'Mech Abomination',
-                           'Fallacy of No Return'
-                           ]
+        self.name = "Farm World Boss"
+        self.boss_names = list(boss_config.keys())
+        self.boss_names.insert(0, "N/A")
 
         self.find_echo_method = ['Walk', 'Run in Circle', 'Turn Around and Search']
 
         default_config = {
+            'Farm All World Bosses': True,
+            'All Echo Pickup Method': 'Turn Around and Search',
             'Boss1': 'N/A',
             'Boss1 Echo Pickup Method': 'Turn Around and Search',
             'Boss2': 'N/A',
@@ -33,6 +49,7 @@ class FarmWorldBossTask(BaseCombatTask):
             'Boss3 Echo Pickup Method': 'Turn Around and Search',
             'Repeat Farm Count': 1000
         }
+        self.config_type['All Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.config_type['Boss1 Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.config_type['Boss2 Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.config_type['Boss3 Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
@@ -60,42 +77,66 @@ class FarmWorldBossTask(BaseCombatTask):
         self.set_check_monthly_card()
         self.check_main()
         count = 0
-        while True:
+        farm_all = self.config.get('Farm All World Bosses')
+        method = self.config.get('All Echo Pickup Method', 'Walk')
+
+        boss_list = []
+        if farm_all:
+            boss_list = self.boss_names
+        else:
             for i in range(1, 4):
                 key = 'Boss' + str(i)
-                if boss_name := self.config.get(key):
-                    if boss_name != 'N/A':
-                        count += 1
-                        self.teleport_to_boss(boss_name, use_custom=True)
+                boss_list.append(self.config.get(key))
+        
+        while True:
+            for boss_name in boss_list:
+                if boss_name != 'N/A':
+                    count += 1
+                        
+                    use_custom_teleport = boss_config[boss_name]['use_custom_teleport']
+
+                    try:
+                        self.teleport_to_boss(boss_name, use_custom=use_custom_teleport)
+                        walk_sec = boss_config[boss_name]['walk_sec']                        
+                        if not use_custom_teleport:
+                            logger.info(f'walk to the boss for {walk_sec} sec')
+                            self.walk_until_f(raise_if_not_found=False, time_out=walk_sec)
+                            logger.info(f'stopped walking to the boss for {walk_sec} sec')
+
                         logger.info(f'farm echo combat once start')
                         if boss_name == 'Crownless':
                             self.wait_in_team_and_world(time_out=20)
                             self.sleep(2)
-                            logger.info('Crownless walk to f')
-                            self.walk_until_f(raise_if_not_found=True, time_out=4, backward_time=1)
+                            logger.info('Crownless walk to interact')
+                            self.walk_until_f(raise_if_not_found=False, time_out=10, backward_time=1)
+                            logger.info('Crownless wait until in combat')
                             in_combat = self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10,
                                                         wait_until_before_delay=0)
                             if not in_combat:  # try click again
+                                logger.info('Crownless still not in combat, waiting until f')
                                 self.walk_until_f(raise_if_not_found=True, time_out=4)
+
                         elif boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Bell-Borne model to appear')
                             self.sleep(15)
-                        self.run_until(self.in_combat, 'w', time_out=10, running=True)
                         if boss_name == 'Sentry Construct':
                             logger.debug('Sentry Construct sleep')
                             self.sleep(5)
                         try:
-                            self.combat_once(wait_before=0)
+                            self.combat_once(wait_before=0, wait_combat_time=30)
                         except CharDeadException:
                             logger.info(f'char dead try teleport to heal')
                             self.teleport_to_heal()
-                            continue
+                            continue                    
+
                         logger.info(f'farm echo combat end')
                         if boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Boss model to disappear')
                             self.sleep(5)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
-                        method = self.config.get(f'Boss{i} Echo Pickup Method', 'Walk')
+
+                        if not farm_all:
+                            method = self.config.get(f'Boss{i} Echo Pickup Method', 'Walk')
 
                         if method == 'Run in Circle':
                             dropped = self.run_in_circle_to_find_echo()
@@ -104,6 +145,16 @@ class FarmWorldBossTask(BaseCombatTask):
                         else:
                             dropped = self.walk_find_echo()
                         self.incr_drop(dropped)
+                    except WaitFailedException:
+                        logger.info(f'{boss_name}: WaitFailedException occured, moving to the next boss')
+                        self.record_error_log(f'{boss_name}: WaitFailedException occured, moving to the next boss')
+                        self.incr_skip_count(boss_name)
+                        continue
+                    except CannotFindException:
+                        logger.info(f'{boss_name}: cannot find interact key, moving to the next boss')
+                        self.record_error_log(f'{boss_name}: cannot find interact key, moving to the next boss')
+                        self.incr_skip_count(boss_name)   
+                        continue                                     
 
             if count <= 1:
                 self.log_error('Must choose at least 2 Boss to Farm', notify=True)
