@@ -17,6 +17,6 @@ class Zhezhi(BaseChar):
         if self.is_forte_full():
             self.click_resonance(post_sleep=0.5)
             self.normal_attack()
-        self.click_echo_and_swapout()
+        self.click_echo()
         self.click_resonance()
         self.switch_next_char()
