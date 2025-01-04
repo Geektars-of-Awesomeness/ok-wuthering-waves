@@ -6,7 +6,6 @@ import numpy as np
 import re
 from ok import ConfigOption, Logger
 from ok import get_connected_area_by_color, color_range_to_bound
-from ok.feature.FindFeature import FindFeature
 from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
@@ -34,7 +33,7 @@ key_config_option = ConfigOption('Game Hotkey Config', {
 }, description='In Game Hotkey for Skills')
 
 
-class BaseCombatTask(CombatCheck, FindFeature):
+class BaseCombatTask(CombatCheck):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

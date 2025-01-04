@@ -1,6 +1,6 @@
 from qfluentwidgets import FluentIcon
 
-from ok.Task import CannotFindException, WaitFailedException
+from ok import CannotFindException, WaitFailedException
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharDeadException
 
