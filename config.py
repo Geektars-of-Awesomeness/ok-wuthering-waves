@@ -49,9 +49,9 @@ config = {
         'ratio': '16:9',
         'min_size': (1280, 720)
     },
-    # 'analytics': {
-        # 'report_url': 'http://111.231.71.225/report'
-    # },
+    'analytics': {
+        'report_url': 'http://111.231.71.225/report'
+    },
     'git_update': {'sources': [{
         'name': 'Global',
         'git_url': 'https://github.com/ok-oldking/ok-ww-update.git',
@@ -106,7 +106,6 @@ config = {
     'onetime_tasks': [  # tasks to execute
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.FarmWorldBossTask", "FarmWorldBossTask"],
-        ["src.task.DiscardEchoTask", "DiscardEchoTask"],
         ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],

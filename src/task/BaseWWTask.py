@@ -8,14 +8,6 @@ from ok import ConfigOption
 
 logger = Logger.get_logger(__name__)
 
-key_config_option = ConfigOption('Game Hotkey Config', {
-    'HotKey Verify': True,
-    'Echo Key': 'q',
-    'Liberation Key': 'r',
-    'Resonance Key': 'f',
-    'Interact Key': 'e',
-}, description='In Game Hotkey for Skills')
-
 pick_echo_config_option = ConfigOption('Pick Echo Config', {
     'Use OCR': False
 }, config_description={
@@ -34,7 +26,6 @@ class BaseWWTask(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.key_config = self.get_global_config(key_config_option)
         self.pick_echo_config = self.get_global_config(pick_echo_config_option)
         self.monthly_card_config = self.get_global_config(monthly_card_config_option)
         self.next_monthly_card_start = 0
@@ -75,18 +66,6 @@ class BaseWWTask(BaseTask):
             return False, message
         else:
             return True, None
-                
-    def get_liberation_key(self):
-        return self.key_config['Liberation Key']
-
-    def get_echo_key(self):
-        return self.key_config['Echo Key']
-
-    def get_resonance_key(self):
-        return self.key_config['Resonance Key']       
-            
-    def get_interact_key(self):
-        return self.key_config['Interact Key']                
 
     def absorb_echo_text(self, ignore_config=False):
         if (self.pick_echo_config.get('Use OCR') or self.ocr_lib == 'paddleocr' or ignore_config) and (
@@ -191,7 +170,7 @@ class BaseWWTask(BaseTask):
             return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
                                             target_text=target_text) and self.sleep(0.5)
         else:
-            self.send_key(self.get_interact_key())
+            self.send_key('f')
             if self.handle_claim_button():
                 return False
         self.sleep(0.5)
@@ -207,7 +186,7 @@ class BaseWWTask(BaseTask):
         f_found = self.wait_until(lambda: self.find_f_with_text(target_text=target_text), time_out=time_out,
                                   raise_if_not_found=False, wait_until_before_delay=0)
         if f_found:
-            self.send_key(self.get_interact_key())
+            self.send_key('f')
             self.sleep(0.1)
         self.send_key_up(direction)
         if running:
@@ -299,12 +278,6 @@ class BaseWWTask(BaseTask):
     def incr_drop(self, dropped):
         if dropped:
             self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
-
-    def record_error_log(self, errorMsg):
-        self.info['Errors (see logs for details)'] = self.info.get('Errors (see logs for details)', '') + errorMsg + '\n'
-
-    def incr_skip_count(self, boss_name):
-        self.info[f'{boss_name} (skip count)'] = self.info.get(f'{boss_name} (skip count)',0) + 1    
 
     def should_check_monthly_card(self):
         if self.next_monthly_card_start > 0:
@@ -432,7 +405,7 @@ class BaseWWTask(BaseTask):
         self.click_relative(0.89, 0.91)
         self.sleep(1)
         self.wait_click_travel(use_custom=use_custom)
-        self.wait_in_team_and_world(time_out=30) #120
+        self.wait_in_team_and_world(time_out=120)
         self.sleep(0.5)
 
     def click_traval_button(self, use_custom=False):

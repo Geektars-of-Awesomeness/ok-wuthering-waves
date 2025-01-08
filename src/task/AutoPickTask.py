@@ -21,11 +21,11 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
         })
 
     def run(self):
-        self.send_key(self.get_interact_key())
+        self.send_key('f')
         self.sleep(0.2)
-        self.send_key(self.get_interact_key())
+        self.send_key('f')
         self.sleep(0.2)
-        self.send_key(self.get_interact_key())
+        self.send_key('f')
         self.sleep(0.2)
 
     def trigger(self):
@@ -33,7 +33,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
                               threshold=0.8):
             if self.in_realm():
                 logger.info(f'found f in realm click f')
-                self.send_key(self.get_interact_key(), after_sleep=1)
+                self.send_key('f', after_sleep=1)
                 return True
             dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,
